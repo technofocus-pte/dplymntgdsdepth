@@ -77,9 +77,7 @@ This task creates the server that will become your domain controller.
 6.  Wait for **Your deployment is complete**, then click **Go to resource**.
 
 ![](media/image7.png)
->
 ![](media/image8.png)
->
 > **Note** - If the deployment fails, check for an unregistered Microsoft.Compute resource provider, a regional vCPU quota limit, or an unavailable VM size, and try another size or region.
 
 ### Task 2: Set a static private IP address
@@ -89,7 +87,6 @@ A domain controller must keep the same IP address because it is also the DNS ser
 1.  On the **DC01-XXXX** virtual machine page, under **Networking**, click **Network settings**, then click the network interface name.
 
 ![](media/image9.png)
->
 ![](media/image10.png)
 
 2.  Under **Settings**, click **IP configurations** and select **ipconfig1**.
@@ -105,11 +102,8 @@ A domain controller must keep the same IP address because it is also the DNS ser
 2.  +++++++++++++++++++++++
 
 ![](media/image13.png)
->
 ![](media/image14.png)
->
 ![](media/image15.png)
->
 ![](media/image16.png)
 
 3.  On the server, right-click **Start** and select **Terminal (Admin)** (or **Windows PowerShell (Admin)**).
@@ -128,12 +122,11 @@ Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 
 ```powershell
 Install-ADDSForest -DomainName "contoso.local" -DomainNetbiosName "CONTOSO" -InstallDns `
--SafeModeAdministratorPassword (ConvertTo-SecureString 'P@55w.rd1234’ -AsPlainText -Force) `
+-SafeModeAdministratorPassword (ConvertTo-SecureString 'P@55w.rd1234' -AsPlainText -Force) `
 -Force
 ```
 
 ![](media/image19.png)
->
 > **Note** - The server restarts automatically when promotion completes (about 5-10 minutes). Your RDP session disconnects; this is expected.
 
 6.  Reconnect with RDP and sign in as **CONTOSO\labadmin** with the same password.
@@ -146,7 +139,6 @@ Get-Service NTDS, DNS, Netlogon | Select-Object Name, Status
 ```
 
 ![](media/image20.png)
->
 > **Note** - You should see **contoso.local** as the DNSRoot and all three services in the **Running** state.
 
 ### Task 4: Prepare the domain controller for the sensor
@@ -169,7 +161,6 @@ Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 5 HotFix
 ```
 
 ![](media/image22.png)
->
 > **Note** - If the update is missing, open **Settings \> Windows Update**, click **Check for updates**, install all updates and restart before continuing.
 
 3.  Create an organizational unit and three test users:
@@ -223,7 +214,6 @@ This task downloads the sensor v3.x onboarding package and its one-time access k
 1.  On the **Identities** settings page, open the **Sensors** page (shown as **On-premises \> Sensor management** in newer tenants). You can also browse directly to <https://security.microsoft.com/securitysettings/identities>.
 
 ![](media/image27.png)
->
 > **Note** - The Defender portal is being updated. If you see an **Activation** tab rather than **Sensor management**, use it; the options are the same.
 
 2.  Click **Download onboarding package**.
@@ -236,7 +226,8 @@ This task downloads the sensor v3.x onboarding package and its one-time access k
 
 4.  Click **Download** to save the package to the **Downloads** folder, then click the copy button next to **Access key** and paste the key into **Notepad**.
 
-**\[Screenshot pending: E2T2S4\]**
+![](media/image30.png)
+![](media/image31.png)
 
 **The access key is used only during installation. If you regenerate it, the old key stops working and any installation that uses it fails.**
 
@@ -244,26 +235,25 @@ This task downloads the sensor v3.x onboarding package and its one-time access k
 
 This task installs and activates the sensor.
 
-1.  Open **File Explorer**, go to **Downloads**, right-click the package ZIP and select **Extract All**. Keep the **resources** subfolder with the script.
-
-**\[Screenshot pending: E2T3S1\]**
+1.  Open **File Explorer**, go to **Downloads**, right-click the package ZIP and select **Extract All**.![](media/image32.png)
 
 **Note** - Running the script from inside the ZIP fails. Always extract it first.
 
-2.  In **Terminal (Admin)**, change to the extracted folder and run the onboarding script:
+2.  In **Windows PowerShell (Admin)**, change to the extracted folder and run the onboarding script:
 
 ```powershell
-Set-Location "$env:USERPROFILE\Downloads\MDI-Lab-Package\DfiOnboarding"
+Set-Location (Split-Path (Get-ChildItem "$env:USERPROFILE\Downloads\MDI-Lab-Package" -Recurse -Filter "*Onboarding*.cmd" | Select-Object -First 1).FullName)
 .\DefenderForIdentityV3StandaloneOnboardingScript.cmd
 ```
 
-**\[Screenshot pending: E2T3S2\]**
+![](media/image33.png)
 
 **Note** - Adjust the path if your extracted folder has a different name.
 
 3.  When prompted, paste the access key from Notepad and press **Enter**. The input is masked. Wait for the script to report that onboarding completed.
 
-**\[Screenshot pending: E2T3S3\]**
+![](media/image34.png)
+![](media/image35.png)
 
 ### Task 4: Validate sensor activation
 
@@ -271,19 +261,15 @@ This task confirms that the sensor is registered and running.
 
 1.  In the Defender portal, return to **Settings \> Identities \> Sensors** (**Sensor management**) and click **Refresh**.
 
-**\[Screenshot pending: E2T4S1\]**
+![](media/image36.png)
 
 2.  Confirm that **DC01-XXXX** is listed with **Type** **Domain controller** and **Sensor status** **Running**.
 
-**\[Screenshot pending: E2T4S2\]**
+![](media/image37.png)
 
-**Note** - The first sensor activation in a tenant can take up to one hour to show **Running**. No restart is required.
-
-3.  On the server, confirm the sensor can reach the service by checking the latest sensor logs or by waiting for the **Sensor health issues** tab (Exercise 3, Task 4) to show no **Sensor stopped communicating** issue.
+**Note** - The first sensor activation in a tenant can take up to one hour to show **Running**.
 
 ## Exercise 3: Configure Event Collection
-
-**Time - 25 minutes**
 
 Several Defender for Identity detections rely on Windows security events from the domain controller, such as 4776 (credential validation), 4662 (object operations) and 5136 (directory changes). In this exercise you let the sensor configure auditing automatically, verify the configuration, and review health issues.
 
@@ -291,13 +277,11 @@ Several Defender for Identity detections rely on Windows security events from th
 
 1.  In the Defender portal, go to **System \> Settings \> Identities**. In the **General** section, click **Advanced features**.
 
-**\[Screenshot pending: E3T1S1\]**
-
 2.  Turn on **Automatic Windows auditing configuration** and click **Save**.
 
-**\[Screenshot pending: E3T1S2\]**
+![](media/image38.png)
 
-**Note** - The sensor checks the auditing configuration, fixes any gaps in the local system policy, and repeats this every 24 hours. Group Policy settings can override what the sensor applies.
+**Note** - The sensor checks the auditing configuration, fixes any gaps in the local system policy, and repeats this every 24 hour. Group Policy settings can override what the sensor applies.
 
 ### Task 2: Verify the auditing configuration
 
@@ -309,29 +293,31 @@ This task checks the auditing settings from the domain controller with the Defen
 Install-Module DefenderForIdentity -Scope AllUsers -Force
 ```
 
-**\[Screenshot pending: E3T2S1\]**
+![](media/image39.png)
+> **Note** - If prompted to install the NuGet provider or trust the PSGallery repository, answer **Y**.
 
-**Note** - If prompted to install the NuGet provider or trust the PSGallery repository, answer **Y**.
+2.  Run the following command to turn on the audit settings Defender for Identity needs on this domain controller: advanced audit policy, NTLM auditing and auditing of changes to Active Directory objects.  
+    **Set-MDIConfiguration -Mode LocalMachine -Configuration AdvancedAuditPolicyDCs,NTLMAuditing,DomainObjectAuditing**
 
-2.  Display the local auditing configuration:
+3.  Display the local auditing configuration:
 
 ```powershell
-Get-MDIConfiguration -Mode LocalMachine -Configuration All | Format-Table -AutoSize
+Get-MDIConfiguration -Mode LocalMachine -Configuration All -Identity "$env:COMPUTERNAME$" | Format-Table -AutoSize
 ```
 
-**\[Screenshot pending: E3T2S2\]**
+![](media/image40.png)
 
-3.  Display the effective audit policy:
+4.  Display the effective audit policy:
 
 ```powershell
 auditpol.exe /get /category:*
 ```
 
-**\[Screenshot pending: E3T2S3\]**
+![](media/image41.png)
+![](media/image42.png)
+> **Note** - Credential Validation, Directory Service Access, Directory Service Changes, and Security Group Management should show **Success and Failure**.
 
-**Note** - Credential Validation, Directory Service Access, Directory Service Changes, and Security Group Management should show **Success and Failure**.
-
-4.  If any required setting still shows as not configured after 30 minutes, apply all local settings immediately:
+5.  If any required setting still shows as not configured after 30 minutes, apply all local settings immediately:
 
 ```powershell
 Set-MDIConfiguration -Mode LocalMachine -Configuration All
@@ -340,11 +326,24 @@ gpupdate /force
 
 ### Task 3: Confirm that events are generated
 
-1.  Sign out of RDP, reconnect and enter a wrong password once for **CONTOSO\jdoe**, then sign in again as **CONTOSO\labadmin**.
+1.  Sign out of RDP, reconnect and enter a wrong password once for **CONTOSO\jdoe.**![](media/image43.png)
 
-2.  Open **Event Viewer**, expand **Windows Logs** and select **Security**. Click **Filter Current Log**, enter **4776** in the event ID box and click **OK**.
+![](media/image44.png)
+![](media/image45.png)P
 
-**\[Screenshot pending: E3T3S2\]**
+2.  Sign in again as **CONTOSO\labadmin** enter the following password- **P@55w.rd1234**
+
+3.  
+
+![](media/image46.png)
+
+4.  Open **Event Viewer**, expand **Windows Logs** and select **Security**. Click **Filter Current Log**, enter **4776** in the event ID box and click **OK**.
+
+![](media/image47.png)
+
+![](media/image48.png)
+
+![](media/image49.png)
 
 **Note** - You should see credential validation events, including a failure for **jdoe**.
 
@@ -354,19 +353,19 @@ Health issues report sensor and configuration problems that reduce detection cov
 
 1.  In the Defender portal, go to **System \> Settings \> Identities**. Under **Deployment**, select **Health issues**.
 
-**\[Screenshot pending: E3T4S1\]**
+![](media/image50.png)
 
 2.  Review the **Global health issues** tab, then the **Sensor health issues** tab. Select any open issue to read its details and recommended fix.
 
-**\[Screenshot pending: E3T4S2\]**
+![](media/image51.png)
 
 3.  Use the table below to resolve the most common issues on a new domain controller:
 
-    - **NTLM Auditing is not enabled** / **Directory Services Advanced Auditing is not enabled as required**: confirm Task 1 is enabled, or run **Set-MDIConfiguration -Mode LocalMachine -Configuration All**
+    - **NTLM Auditing is not enabled** / **Directory Services Advanced Auditing is not enabled as required**: confirm Task 1 is enabled, or run **Set-MDIConfiguration -Mode LocalMachine -Configuration All** on the domain controller
 
     - **Directory Services Object Auditing** / **Auditing on the Configuration container is not enabled as required**: run **Set-MDIConfiguration -Mode Domain -Configuration All** on the domain controller
 
-    - **Power mode isn't configured for optimal processor performance**: run **powercfg /setactive SCHEME_MIN**
+    - **Power mode isn't configured for optimal processor performance**: run **powercfg /setactive SCHEME_MIN** on the domain controller
 
     - **Sensor stopped communicating**: check that the VM is running and that outbound HTTPS to the Defender for Endpoint service URLs is not blocked
 
@@ -374,27 +373,25 @@ Health issues report sensor and configuration problems that reduce detection cov
 
 ## Exercise 4: Configure and Manage Defender for Identity Alerts
 
-**Time - 25 minutes**
-
 Defender for Identity detections normally use a learning period and High thresholds to reduce false positives. For lab and proof-of-concept environments, Microsoft provides Recommended test mode, which lowers every threshold so alerts appear immediately.
 
 ### Task 1: Adjust alert thresholds
 
 1.  In the Defender portal, go to **System \> Settings \> Identities** and click **Adjust alert thresholds**.
 
-**\[Screenshot pending: E4T1S1\]**
+![](media/image52.png)
 
 2.  Review the detections that support threshold levels, for example **Security principal reconnaissance (LDAP)**, **Suspected Brute Force attack (Kerberos, NTLM)**, and **User and Group membership reconnaissance (SAMR)**. Read the **Information** column to see how Medium and Low change each detection.
 
-**\[Screenshot pending: E4T1S2\]**
+![](media/image53.png)
 
 3.  Turn on **Recommended test mode**, set the end time to **tomorrow**, and click **Apply changes**.
 
-**\[Screenshot pending: E4T1S3\]**
+![](media/image54.png)
 
-**While test mode is on, all thresholds are set to Low and are read-only. Turning it off restores the previous values. Never leave test mode on in production.**
+> **While test mode is on, all thresholds are set to Low and are read-only. Turning it off restores the previous values. Never leave test mode on in production.**
 
-### Task 2: Generate test activity and review it
+### Task 2: Generate test activity and review it 
 
 This task runs harmless reconnaissance commands and shows the activity Defender for Identity captured.
 
@@ -406,6 +403,8 @@ net group "Domain Admins" /domain
 nltest /dclist:contoso.local
 ```
 
+![](media/image55.png)
+
 2.  In the Defender portal, go to **Investigation & response \> Hunting \> Advanced hunting** and run the following query:
 
 ```kusto
@@ -415,13 +414,11 @@ IdentityQueryEvents
 | order by Timestamp desc
 ```
 
-**\[Screenshot pending: E4T2S2\]**
+![](media/image56.png)
 
 **Note** - Results confirm that the sensor is capturing SAMR, LDAP and DNS queries. Data can take 10-15 minutes to appear.
 
 3.  Go to **Investigation & response \> Incidents & alerts \> Alerts**, click **Filter**, set **Service source** to **Microsoft Defender for Identity**, and review any alerts.
-
-**\[Screenshot pending: E4T2S3\]**
 
 **Note** - Activity that originates on the domain controller itself may be filtered by some detections. If no alert appears, the Advanced hunting results are sufficient proof that event collection works.
 
@@ -431,19 +428,27 @@ This task sends an email to the security team when Defender for Identity raises 
 
 1.  In the Defender portal, go to **System \> Settings \> Microsoft Defender XDR** and select **Email notifications**.
 
-**\[Screenshot pending: E4T3S1\]**
+![](media/image57.png)
 
 2.  On the **Incidents** tab, click **+ Add incident notification rule**.
 
-**\[Screenshot pending: E4T3S2\]**
+![](media/image58.png)
 
 3.  Enter **MDI-Lab-Incident-Notification** as the name, click **Next**, and on **Notification settings** set **Service sources** to **Microsoft Defender for Identity** and select severities **High** and **Medium**. Click **Next**.
 
-**\[Screenshot pending: E4T3S3\]**
+![](media/image59.png)
+
+![](media/image60.png)
+
+![](media/image61.png)
 
 4.  Add your administrator email address as a recipient, click **Next**, and then click **Create rule**.
 
-**\[Screenshot pending: E4T3S4\]**
+![](media/image62.png)
+
+![](media/image63.png)
+
+![](media/image64.png)
 
 ## Summary
 
